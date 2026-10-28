@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X & O Tic-Tac-Toe Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #533483);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .game-header {
+            margin-bottom: 30px;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffbe0b);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textGradient 4s ease infinite;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes textGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .status {
+            font-size: 1.3rem;
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 20px;
+            min-height: 30px;
+            padding: 10px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 0 auto 30px;
+            max-width: 360px;
+        }
+
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform: scale(1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.03);
+        }
+
+        .cell.x {
+            color: #ff6b6b;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+
+        .cell.o {
+            color: #4ecdc4;
+            text-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+        }
+
+        .cell.x::before,
+        .cell.x::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        .cell.x::before {
+            width: 8px;
+            height: 80%;
+            transform: rotate(45deg);
+        }
+
+        .cell.x::after {
+            width: 80%;
+            height: 8px;
+            transform: rotate(-45deg);
+        }
+
+        .cell.o::before {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 60%;
+            border: 3px solid #4ecdc4;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+
+        .score-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px 30px;
+            min-width: 120px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .score-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .score-value.x-score {
+            color: #ff6b6b;
+        }
+
+        .score-value.o-score {
+            color: #4ecdc4;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn.restart {
+            background: linear-gradient(45deg, #4ecdc4, #1a936f);
+            box-shadow: 0 5px 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn.restart:hover {
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .winner-highlight {
+            background: rgba(255, 199, 0, 0.15) !important;
+            border-color: #ffc107 !important;
+            animation: highlight 1.5s ease infinite;
+        }
+
+        @keyframes highlight {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(255, 193, 7, 0.6); }
+        }
+
+        .game-over {
+            background: rgba(156, 175, 255, 0.15) !important;
+        }
+
+        .player-turn {
+            color: #4ecdc4;
+        }
+
+        .player-x .status::before {
+            content: "X's Turn";
+            color: #ff6b6b;
+        }
+
+        .player-o .status::after {
+            content: "O's Turn";
+            color: #4ecdc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">X & O</div>
+            <div class="status" id="status">Player X's turn</div>
+        </div>
+
+        <div class="score-board">
+            <div class="score-card">
+                <div class="score-label">X Wins</div>
+                <div class="score-value x-score" id="x-score">0</div>
+            </div>
+            <div class="score-card">
+                <div class="score-label">O Wins</div>
+                <div class="score-value o-score" id="o-score">0</div>
+            </div>
+        </div>
+
+        <div class="board" id="board">
+            <div class="cell" data-cell="0"></div>
+            <div class="cell" data-cell="1"></div>
+            <div class="cell" data-cell="2"></div>
+            <div class="cell" data-cell="3"></div>
+            <div class="cell" data-cell="4"></div>
+            <div class="cell" data-cell="5"></div>
+            <div class="cell" data-cell="6"></div>
+            <div class="cell" data-cell="7"></div>
+            <div class="cell" data-cell="8"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn restart" id="restartBtn">Restart Game</button>
+            <button class="btn" id="resetScores">Reset Scores</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const cells = document.querySelectorAll('.cell');
+        const status = document.getElementById('status');
+        const xScoreElement = document.getElementById('x-score');
+        const oScoreElement = document.getElementById('o-score');
+        const restartBtn = document.getElementById('restartBtn');
+        const resetScoresBtn = document.getElementById('resetScores');
+
+        let currentPlayer = 'X';
+        let gameState = ['', '', '', '', '', '', '', '', ''];
+        let scores = { X: 0, O: 0 };
+        let gameActive = true;
+
+        // Winning conditions
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        // Handle cell click
+        function handleCellClick(e) {
+            const clickedCell = e.target;
+            const clickedCellIndex = parseInt(clickedCell.getAttribute('data-cell'));
+
+            // Check if cell is already taken or game is inactive
+            if (gameState[clickedCellIndex] !== '' || !gameActive) {
+                return;
+            }
+
+            // Update game state
+            gameState[clickedCellIndex] = currentPlayer;
+            clickedCell.textContent = currentPlayer;
+            clickedCell.classList.add(currentPlayer.toLowerCase());
+
+            // Check for win or draw
+            handleResultValidation();
+        }
+
+        // Validate the game result
+        function handleResultValidation() {
+            let roundWon = false;
+            let winningStreak = [];
+
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                const condition = gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c];
+
+                if (condition) {
+                    roundWon = true;
+                    winningStreak = winningConditions[i];
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                handleWin(winningStreak);
+                return;
+            }
+
+            // Check for draw
+            const draw = !gameState.includes('');
+            if (draw) {
+                handleDraw();
+                return;
+            }
+
+            // Switch player
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            status.textContent = `Player ${currentPlayer}'s turn`;
+        }
+
+        // Handle win
+        function handleWin(winningStreak) {
+            gameActive = false;
+            status.textContent = `Player ${currentPlayer} wins!`;
+
+            // Update score
+            scores[currentPlayer]++;
+            updateScores();
+
+            // Highlight winning cells
+            winningStreak.forEach(index => {
+                cells[index].classList.add('winner-highlight');
+            });
+        }
+
+        // Handle draw
+        function handleDraw() {
+            gameActive = false;
+            status.textContent = "Game ended in a draw!";
+
+            cells.forEach(cell => {
+                cell.classList.add('game-over');
+            });
+        }
+
+        // Update scores on display
+        function updateScores() {
+            xScoreElement.textContent = scores.X;
+            oScoreElement.textContent = scores.O;
+        }
+
+        // Restart game
+        function restartGame() {
+            currentPlayer = 'X';
+            gameState = ['', '', '', '', '', '', '', '', ''];
+            gameActive = true;
+            status.textContent = `Player ${currentPlayer}'s turn`;
+
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o', 'winner-highlight', 'game-over');
+            });
+        }
+
+        // Reset scores
+        function resetScores() {
+            scores = { X: 0, O: 0 };
+            updateScores();
+        }
+
+        // Add event listeners
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        restartBtn.addEventListener('click', restartGame);
+        resetScoresBtn.addEventListener('click', resetScores);
+
+        // Initialize scores
+        updateScores();
+    </script>
+</body>
+</html>
